@@ -161,3 +161,34 @@ app.get('/api/userinfo',(req,res) => {
         })
     })
 });
+//注册接口
+app.post('/api/adduser',(req,res) => {
+    const user = req.body;
+    console.log(user);
+    const sqlStr = 'insert into member set ?';
+    conn.query(sqlStr,user,(err,results) => {
+        if(err) return res.json({status:101,message:'添加失败',affectedRows:0});
+        if(results.affectedRows !== 1) return res.json({status:100,message:'添加失败',affectedRows:0});
+        res.json({
+            status:200,
+            message:'添加成功',
+            affectedRows:results.affectedRows
+        })
+    })
+});
+///获取所有图书
+app.get('/api/getallbook',(req,res) => {
+    // 定义SQL语句
+    const sqlStr = 'select * from librarybook';
+    conn.query(sqlStr,(err,results) => {
+        console.log(results);
+        console.log(results[0]);//每一行查询结果保存到数字中，这个数组元素是一个对象，对象包括sql获得的属性
+        if(err) return res.json({status:0,message:'获取失败',affectedRows:0});
+        res.json({
+            //在这里返回json对象给服务器，status是状态码，mssage是sql获得的内容属性，
+            //results是sql获取的数据
+
+            status:200,message:{results},affectedRows:0
+        })
+    })
+});
