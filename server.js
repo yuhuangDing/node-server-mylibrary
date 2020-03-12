@@ -192,3 +192,28 @@ app.get('/api/getallbook',(req,res) => {
         })
     })
 });
+
+
+//修改用户信息接口
+//http://127.0.0.1:5000/api/updateuserinfo用传一个body对象数据修改指定id，用x-www-form格式
+app.post('/api/updateuserinfo',(req,res) => {
+    const sqlStr = 'update member set ? where username = ?';
+    conn.query(sqlStr,[req.body,req.body.username],(err,results) => {
+        if(err) return res.json({status:0,message:'更新失败',affevtedRows:0});
+        //影响行数不等于1
+        if(results.affectedRows !== 1) return res.json({status:0,message:'更新项目不存在',affectedRows:0});
+        res.json({status:200,message:'更新成功',affectedRows:results.affectedRows})
+    })
+});
+
+//修改用户密码接口
+//http://127.0.0.1:5000/api/updateuserinfopwd用传一个body对象数据修改指定id，用x-www-form格式
+app.post('/api/updateuserinfopwd',(req,res) => {
+    const sqlStr = 'update member set ? where username = ?';
+    conn.query(sqlStr,[req.body,req.body.username],(err,results) => {
+        if(err) return res.json({status:0,message:'密码修改失败',affevtedRows:0});
+        //影响行数不等于1
+        if(results.affectedRows !== 1) return res.json({status:0,message:'用户不存在',affectedRows:0});
+        res.json({status:200,message:'密码修改成功',affectedRows:results.affectedRows})
+    })
+});
