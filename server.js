@@ -217,3 +217,53 @@ app.post('/api/updateuserinfopwd',(req,res) => {
         res.json({status:200,message:'密码修改成功',affectedRows:results.affectedRows})
     })
 });
+//查询指定id的图书
+//接口地址http://127.0.0.1:5000/api/bookinfo?id=1
+app.get('/api/bookinfo',(req,res) => {
+    const id = req.query.id;
+    const sqlStr = 'select * from librarybook where id = ?';
+    conn.query(sqlStr, id, (err, results) => {
+        if (err) return res.json({status: 0, message: '获取数据失败', affectedRows: 0});
+        if (results.length !== 1) return res.json({status: 0, message: '数据不存在', affectedRows: 0});
+        res.json({
+            status: 200,
+            message: results[0],
+            affectedRows: 0
+        })
+    })
+});
+// 根据图书isbn获取相关数据数据
+//http://127.0.0.1:5000/api/getcomment?bookisbn=
+app.get('/api/getcomment',(req,res) => {
+    // 定义SQL语句
+    const isbn=req.query.bookisbn;
+    const sqlStr = 'select * from bookcomment where bookisbn = ?';
+    conn.query(sqlStr,isbn,(err,results) => {
+        console.log(results);
+        console.log(results[0]);//每一行查询结果保存到数字中，这个数组元素是一个对象，对象包括sql获得的属性
+        if(err) return res.json({status:0,message:'获取失败',affectedRows:0});
+        res.json({
+            //在这里返回json对象给服务器，status是状态码，mssage是sql获得的内容属性，
+            //results是sql获取的数据
+
+            status:200,message:results,affectedRows:0
+        })
+    })
+});
+//添加评论数据，http://127.0.0.1:5000/api/postcomment?isbn=
+//调用传一个body对象数据，用x-www-form格式
+app.post('/api/postcomment',(req,res) => {
+
+    const data = req.body;
+    console.log(data);
+    const sqlStr = 'insert into bookcomment set ?';
+    conn.query(sqlStr,[data],(err,results) => {
+        if(err) return res.json({status:0,message:'添加失败',affectedRows:0});
+        if(results.affectedRows !== 1) return res.json({status:200,message:'添加失败',affectedRows:0});
+        res.json({
+            status:200,
+            message:'添加成功',
+            affectedRows:results.affectedRows
+        })
+    })
+});
