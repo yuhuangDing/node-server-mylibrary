@@ -267,3 +267,20 @@ app.post('/api/postcomment',(req,res) => {
         })
     })
 });
+
+//查询指定user的所有评论
+//接口地址http://127.0.0.1:5000/api/getusercomment?username=1
+app.get('/api/getusercomment',(req,res) => {
+    const username = req.query.username;
+    console.log(username)
+    const sqlStr = 'select * from bookcomment where username = ?';
+    conn.query(sqlStr, username, (err, results) => {
+        if (err) return res.json({status: 0, message: '获取数据失败', affectedRows: 0});
+        //if (results.length !== 1) return res.json({status: 0, message: '数据不存在', affectedRows: 0});
+        res.json({
+            status: 200,
+            message: results,
+            affectedRows: 0
+        })
+    })
+});
