@@ -284,3 +284,21 @@ app.get('/api/getusercomment',(req,res) => {
         })
     })
 });
+
+//添加图书预约
+//接口地址http://127.0.0.1:5000/api/orderbook
+app.post('/api/orderbook',(req,res) => {
+
+    const data = req.body;
+    console.log(data);
+    const sqlStr = 'insert into orderbook set ?';
+    conn.query(sqlStr,[data],(err,results) => {
+        if(err) return res.json({status:0,message:'添加失败',affectedRows:0});
+        if(results.affectedRows !== 1) return res.json({status:100,message:'添加失败',affectedRows:0});
+        res.json({
+            status:200,
+            message:'添加成功',
+            affectedRows:results.affectedRows
+        })
+    })
+});
