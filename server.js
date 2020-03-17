@@ -232,7 +232,7 @@ app.get('/api/bookinfo',(req,res) => {
         })
     })
 });
-// 根据图书isbn获取相关数据数据
+// 根据图书isbn获取相关评论数据数据
 //http://127.0.0.1:5000/api/getcomment?bookisbn=
 app.get('/api/getcomment',(req,res) => {
     // 定义SQL语句
@@ -246,7 +246,7 @@ app.get('/api/getcomment',(req,res) => {
             //在这里返回json对象给服务器，status是状态码，mssage是sql获得的内容属性，
             //results是sql获取的数据
 
-            status:200,message:results,affectedRows:0
+            status:200,message:JSON.stringify(results),affectedRows:0
         })
     })
 });
@@ -272,7 +272,7 @@ app.post('/api/postcomment',(req,res) => {
 //接口地址http://127.0.0.1:5000/api/getusercomment?username=1
 app.get('/api/getusercomment',(req,res) => {
     const username = req.query.username;
-    console.log(username)
+    console.log(username);
     const sqlStr = 'select * from bookcomment where username = ?';
     conn.query(sqlStr, username, (err, results) => {
         if (err) return res.json({status: 0, message: '获取数据失败', affectedRows: 0});
@@ -299,6 +299,41 @@ app.post('/api/orderbook',(req,res) => {
             status:200,
             message:'添加成功',
             affectedRows:results.affectedRows
+        })
+    })
+});
+//检测是否存在了已经预约的图书
+//接口地址http://127.0.0.1:5000/api/orderbook
+app.post('/api/ishavebook',(req,res) => {
+
+    const data = req.body;
+    console.log(data);
+    var username=data.username;
+    var isbn=data.isbn;
+    const sqlStr = 'select COUNT(*) AS count,isok from orderbook where username= ? AND isbn= ? ';
+    conn.query(sqlStr,[username,isbn],(err,results) => {
+        if(err) return res.json({status:0,message:'数据库错误',affectedRows:0});
+        res.json({
+            status:200,
+            message:JSON.stringify(results[0]),
+            affectedRows:results.affectedRows
+        })
+    })
+});
+
+//查询指定user的所有预约
+//接口地址http://127.0.0.1:5000/api/getuserorder?username=
+app.get('/api/getuserorder',(req,res) => {
+    const username = req.query.username;
+    console.log(username);
+    const sqlStr = 'select * from orderbook where username = ?';
+    conn.query(sqlStr, username, (err, results) => {
+        if (err) return res.json({status: 0, message: '获取数据失败', affectedRows: 0});
+        //if (results.length !== 1) return res.json({status: 0, message: '数据不存在', affectedRows: 0});
+        res.json({
+            status: 200,
+            message: results,
+            affectedRows: 0
         })
     })
 });
