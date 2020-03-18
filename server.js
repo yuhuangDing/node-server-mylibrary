@@ -368,3 +368,52 @@ app.post('/api/delcomment',(req,res) => {
         res.json({status:200,message:'删除成功',affectedRows:results.affectedRows})
     })
 });
+
+/**************************************************管理员接口*******************************************************/
+///获取所有用户
+app.get('/api/Adgetalluser',(req,res) => {
+    // 定义SQL语句
+    const sqlStr = 'select * from member';
+    conn.query(sqlStr,(err,results) => {
+       // console.log(results);
+        console.log(results[0]);//每一行查询结果保存到数字中，这个数组元素是一个对象，对象包括sql获得的属性
+        if(err) return res.json({status:0,message:'获取失败',affectedRows:0});
+        res.json({
+            //在这里返回json对象给服务器，status是状态码，mssage是sql获得的内容属性，
+            //results是sql获取的数据
+            status:200,message:{results},affectedRows:0
+        })
+    })
+});
+//删除用户
+//http://127.0.0.1:5000/api/deluserad用传一个body对象数据修改指定id，用x-www-form格式
+app.post('/api/deluserad',(req,res) => {
+    const data=req.body;
+    console.log(data)
+    const username=data.username;
+    const password=data.password;
+    const phone=data.phone;
+    const sqlStr = "delete from member where username=? and password=? and phone=?";
+    conn.query(sqlStr,[username,password,phone],(err,results) => {
+        if(err) return res.json({status:0,message:'删除失败',affevtedRows:0});
+        //影响行数不等于1
+        if(results.affectedRows !== 1) return res.json({status:0,message:'删除项目不存在',affectedRows:0});
+        res.json({status:200,message:'删除成功',affectedRows:results.affectedRows})
+    })
+});
+//取消预约
+//http://127.0.0.1:5000/api/adaddroot添加管理员权限用传一个body对象数据修改指定id，用x-www-form格式
+app.post('/api/adaddroot',(req,res) => {
+    const data=req.body;
+    const username=data.username;
+    const password=data.password;
+    const phone=data.phone;
+    console.log(data)
+    const sqlStr = "update member set userps='admin' where username = ?  AND password= ? AND phone= ?";
+    conn.query(sqlStr,[username,password,phone],(err,results) => {
+        if(err) return res.json({status:0,message:'添加权限失败',affevtedRows:0});
+        //影响行数不等于1
+        if(results.affectedRows !== 1) return res.json({status:0,message:'添加权限项目不存在',affectedRows:0});
+        res.json({status:200,message:'添加权限成功',affectedRows:results.affectedRows})
+    })
+});
