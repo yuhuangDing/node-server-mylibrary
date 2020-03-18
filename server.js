@@ -310,7 +310,7 @@ app.post('/api/ishavebook',(req,res) => {
     console.log(data);
     var username=data.username;
     var isbn=data.isbn;
-    const sqlStr = 'select COUNT(*) AS count,isok from orderbook where username= ? AND isbn= ? ';
+    const sqlStr = 'select COUNT(*) AS count,isok,sum(orderbooknum) As sum from orderbook where username= ? AND isbn= ? ';
     conn.query(sqlStr,[username,isbn],(err,results) => {
         if(err) return res.json({status:0,message:'数据库错误',affectedRows:0});
         res.json({
@@ -335,5 +335,36 @@ app.get('/api/getuserorder',(req,res) => {
             message: results,
             affectedRows: 0
         })
+    })
+});
+
+//取消预约
+//http://127.0.0.1:5000/api/delorder用传一个body对象数据修改指定id，用x-www-form格式
+app.post('/api/delorder',(req,res) => {
+    const data=req.body;
+    const username=data.username;
+    const isbn=data.isbn;
+    const sqlStr = "update orderbook set orderbooknum=orderbooknum-1,isok='K' where username = ? AND isbn= ? AND isok ='N'";
+    conn.query(sqlStr,[username,isbn],(err,results) => {
+        if(err) return res.json({status:0,message:'取消失败',affevtedRows:0});
+        //影响行数不等于1
+       if(results.affectedRows !== 1) return res.json({status:0,message:'取消项目不存在',affectedRows:0});
+        res.json({status:200,message:'取消预约成功',affectedRows:results.affectedRows})
+    })
+});
+
+//删除评论
+//http://127.0.0.1:5000/api/delcomment用传一个body对象数据修改指定id，用x-www-form格式
+app.post('/api/delcomment',(req,res) => {
+    const data=req.body;
+    const username=data.username;
+    const bookisbn=data.bookisbn;
+    const comment=data.comment;
+    const sqlStr = "update bookcomment set displaycomment='N' where username = ? AND bookisbn= ? AND comment = ? ";
+    conn.query(sqlStr,[username,bookisbn,comment],(err,results) => {
+        if(err) return res.json({status:0,message:'删除失败',affevtedRows:0});
+        //影响行数不等于1
+        if(results.affectedRows !== 1) return res.json({status:100,message:'删除不存在',affectedRows:0});
+        res.json({status:200,message:'删除成功',affectedRows:results.affectedRows})
     })
 });
