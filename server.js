@@ -161,6 +161,7 @@ app.get('/api/userinfo',(req,res) => {
         })
     })
 });
+
 //注册接口
 app.post('/api/adduser',(req,res) => {
     const user = req.body;
@@ -176,6 +177,7 @@ app.post('/api/adduser',(req,res) => {
         })
     })
 });
+
 ///获取所有图书
 app.get('/api/getallbook',(req,res) => {
     // 定义SQL语句
@@ -217,6 +219,7 @@ app.post('/api/updateuserinfopwd',(req,res) => {
         res.json({status:200,message:'密码修改成功',affectedRows:results.affectedRows})
     })
 });
+
 //查询指定id的图书
 //接口地址http://127.0.0.1:5000/api/bookinfo?id=1
 app.get('/api/bookinfo',(req,res) => {
@@ -232,6 +235,7 @@ app.get('/api/bookinfo',(req,res) => {
         })
     })
 });
+
 // 根据图书isbn获取相关评论数据数据
 //http://127.0.0.1:5000/api/getcomment?bookisbn=
 app.get('/api/getcomment',(req,res) => {
@@ -250,6 +254,7 @@ app.get('/api/getcomment',(req,res) => {
         })
     })
 });
+
 //添加评论数据，http://127.0.0.1:5000/api/postcomment?isbn=
 //调用传一个body对象数据，用x-www-form格式
 app.post('/api/postcomment',(req,res) => {
@@ -302,6 +307,7 @@ app.post('/api/orderbook',(req,res) => {
         })
     })
 });
+
 //检测是否存在了已经预约的图书
 //接口地址http://127.0.0.1:5000/api/orderbook
 app.post('/api/ishavebook',(req,res) => {
@@ -369,6 +375,40 @@ app.post('/api/delcomment',(req,res) => {
     })
 });
 
+//添加反馈数据，http://127.0.0.1:5000/api/postsuggest
+//调用传一个body对象数据，用x-www-form格式
+app.post('/api/postsuggest',(req,res) => {
+
+    const data = req.body;
+    console.log(data);
+    const sqlStr = 'insert into suggest set ?';
+    conn.query(sqlStr,[data],(err,results) => {
+        if(err) return res.json({status:0,message:'添加失败',affectedRows:0});
+        if(results.affectedRows !== 1) return res.json({status:200,message:'添加失败',affectedRows:0});
+        res.json({
+            status:200,
+            message:'添加成功',
+            affectedRows:results.affectedRows
+        })
+    })
+});
+
+//查询用户反馈
+//接口地址http://127.0.0.1:5000/api/getusersuggest?username=
+app.get('/api/getusersuggest',(req,res) => {
+    const username = req.query.username;
+    console.log(username)
+    const sqlStr = 'select * from suggest where username = ?';
+    conn.query(sqlStr, username, (err, results) => {
+        if (err) return res.json({status: 0, message: '获取数据失败', affectedRows: 0});
+        res.json({
+            status: 200,
+            message: results,
+            affectedRows: 0
+        })
+    })
+});
+
 /**************************************************管理员接口*******************************************************/
 ///获取所有用户
 app.get('/api/Adgetalluser',(req,res) => {
@@ -385,6 +425,7 @@ app.get('/api/Adgetalluser',(req,res) => {
         })
     })
 });
+
 //删除用户
 //http://127.0.0.1:5000/api/deluserad用传一个body对象数据修改指定id，用x-www-form格式
 app.post('/api/deluserad',(req,res) => {
@@ -401,19 +442,104 @@ app.post('/api/deluserad',(req,res) => {
         res.json({status:200,message:'删除成功',affectedRows:results.affectedRows})
     })
 });
-//取消预约
+
+//添加管理员权限
 //http://127.0.0.1:5000/api/adaddroot添加管理员权限用传一个body对象数据修改指定id，用x-www-form格式
 app.post('/api/adaddroot',(req,res) => {
     const data=req.body;
     const username=data.username;
     const password=data.password;
     const phone=data.phone;
-    console.log(data)
+    console.log(data);
     const sqlStr = "update member set userps='admin' where username = ?  AND password= ? AND phone= ?";
     conn.query(sqlStr,[username,password,phone],(err,results) => {
         if(err) return res.json({status:0,message:'添加权限失败',affevtedRows:0});
         //影响行数不等于1
         if(results.affectedRows !== 1) return res.json({status:0,message:'添加权限项目不存在',affectedRows:0});
         res.json({status:200,message:'添加权限成功',affectedRows:results.affectedRows})
+    })
+});
+
+//重置密码为1111
+//http://127.0.0.1:5000/api/adrebootpwd添加管理员权限用传一个body对象数据修改指定id，用x-www-form格式
+app.post('/api/adrebootpwd',(req,res) => {
+    const data=req.body;
+    const username=data.username;
+    const phone=data.phone;
+    console.log(data);
+    const sqlStr = "update member set password='1234' where username = ?  AND phone= ?";
+    conn.query(sqlStr,[username,phone],(err,results) => {
+        if(err) return res.json({status:0,message:'重置密码失败',affevtedRows:0});
+        //影响行数不等于1
+        if(results.affectedRows !== 1) return res.json({status:0,message:'重置密码项目不存在',affectedRows:0});
+        res.json({status:200,message:'重置密码成功',affectedRows:results.affectedRows})
+    })
+});
+
+//获取所有预约
+app.get('/api/Adgetallorder',(req,res) => {
+    // 定义SQL语句
+    const sqlStr = 'select * from orderbook';
+    conn.query(sqlStr,(err,results) => {
+        // console.log(results);
+      //  console.log(results[0]);//每一行查询结果保存到数字中，这个数组元素是一个对象，对象包括sql获得的属性
+        if(err) return res.json({status:0,message:'获取失败',affectedRows:0});
+        res.json({
+            //在这里返回json对象给服务器，status是状态码，mssage是sql获得的内容属性，
+            //results是sql获取的数据
+            status:200,message:results,affectedRows:0
+        })
+    })
+});
+
+//同意借书申请和取消借书申请
+app.get('/api/ordermanage',(req,res) => {
+    const id=req.query.id;
+    const opt=req.query.opt;
+    if(opt==='y'){
+        var sqlStr = "UPDATE orderbook set isok='W' WHERE id=?";
+    }
+    else if(opt==='n'){
+        var sqlStr = "UPDATE orderbook set isok='K' WHERE id=?";
+    }
+    conn.query(sqlStr,id,(err,results) => {
+        if(err) return res.json({status:0,message:'操作失败',affevtedRows:0});
+        //影响行数不等于1
+        if(results.affectedRows !== 1) return res.json({status:0,message:'操作不存在',affectedRows:0});
+        res.json({status:200,message:'操作成功',affectedRows:results.affectedRows})
+    })
+});
+
+///获取所有反馈意见
+app.get('/api/getallusersuggest',(req,res) => {
+    // 定义SQL语句
+    const sqlStr = 'select * from suggest';
+    conn.query(sqlStr,(err,results) => {
+        // console.log(results);
+        //console.log(results[0]);//每一行查询结果保存到数字中，这个数组元素是一个对象，对象包括sql获得的属性
+        if(err) return res.json({status:0,message:'获取失败',affectedRows:0});
+        res.json({
+            //在这里返回json对象给服务器，status是状态码，mssage是sql获得的内容属性，
+            //results是sql获取的数据
+            status:200,message:results,affectedRows:0
+        })
+    })
+});
+
+//反馈回复
+//http://127.0.0.1:5000/api/adaddroot添加管理员权限用传一个body对象数据修改指定id，用x-www-form格式
+app.post('/api/replyusersuggest',(req,res) => {
+    const data=req.body;
+    const id=data.id;
+    const replytime=data.replytime;
+    const replyinfo=data.replyinfo;
+    const isok='Y';
+    console.log(data);
+    const sqlStr = "update suggest set replytime=?,replyinfo=?,isok='Y' where id=?";
+    conn.query(sqlStr,[replytime,replyinfo,id],(err,results) => {
+        if(err) return res.json({status:0,message:'回复失败',affevtedRows:0});
+        //影响行数不等于1
+        if(results.affectedRows !== 1) return res.json({status:0,message:'回复不存在',affectedRows:0});
+        res.json({status:200,message:'回复成功',affectedRows:results.affectedRows})
     })
 });
