@@ -34,7 +34,7 @@ app.all("*",function(req,res,next){
 //启动监听，端口号5000
 app.listen(5000, ()=>{
     // 打印一下
-    console.log('http://127.0.0.1:5000')
+    console.log('http://192.168.31.142:5000')
 });
 
 // 获取所有的数据
@@ -183,8 +183,8 @@ app.get('/api/getallbook',(req,res) => {
     // 定义SQL语句
     const sqlStr = 'select * from librarybook';
     conn.query(sqlStr,(err,results) => {
-        console.log(results);
-        console.log(results[0]);//每一行查询结果保存到数字中，这个数组元素是一个对象，对象包括sql获得的属性
+       // console.log(results);
+       // console.log(results[0]);//每一行查询结果保存到数字中，这个数组元素是一个对象，对象包括sql获得的属性
         if(err) return res.json({status:0,message:'获取失败',affectedRows:0});
         res.json({
             //在这里返回json对象给服务器，status是状态码，mssage是sql获得的内容属性，
@@ -526,7 +526,7 @@ app.get('/api/getallusersuggest',(req,res) => {
     })
 });
 
-//反馈回复
+//管理员回复用户反馈
 //http://127.0.0.1:5000/api/adaddroot添加管理员权限用传一个body对象数据修改指定id，用x-www-form格式
 app.post('/api/replyusersuggest',(req,res) => {
     const data=req.body;
@@ -534,12 +534,49 @@ app.post('/api/replyusersuggest',(req,res) => {
     const replytime=data.replytime;
     const replyinfo=data.replyinfo;
     const isok='Y';
-    console.log(data);
+    //console.log(data);
     const sqlStr = "update suggest set replytime=?,replyinfo=?,isok='Y' where id=?";
     conn.query(sqlStr,[replytime,replyinfo,id],(err,results) => {
         if(err) return res.json({status:0,message:'回复失败',affevtedRows:0});
         //影响行数不等于1
         if(results.affectedRows !== 1) return res.json({status:0,message:'回复不存在',affectedRows:0});
         res.json({status:200,message:'回复成功',affectedRows:results.affectedRows})
+    })
+});
+
+///获取所有图书
+app.get('/api/getallbooknopho',(req,res) => {
+    // 定义SQL语句
+    const sqlStr = 'select id,bookname,isbn,bookwriter,booknum from librarybook';
+    conn.query(sqlStr,(err,results) => {
+        // console.log(results);
+        // console.log(results[0]);//每一行查询结果保存到数字中，这个数组元素是一个对象，对象包括sql获得的属性
+        if(err) return res.json({status:0,message:'获取失败',affectedRows:0});
+        res.json({
+            //在这里返回json对象给服务器，status是状态码，mssage是sql获得的内容属性，
+            //results是sql获取的数据
+
+            status:200,message:results,affectedRows:0
+        })
+    })
+});
+//修改馆藏数量
+//http://127.0.0.1:5000/api/updatebooknum添加管理员权限用传一个body对象数据修改指定id，用x-www-form格式
+app.post('/api/updatebooknum',(req,res) => {
+    const data=req.body;
+    const id=data.id;
+    const booknum=data.num;
+    const opt=data.opt;
+   if(opt==='-'){
+       var sqlStr = " update librarybook set booknum=booknum - ? where id = ?";
+   }else {
+       var sqlStr = " update librarybook set booknum=booknum + ? where id = ?";
+
+   }
+    conn.query(sqlStr,[booknum,id],(err,results) => {
+        if(err) return res.json({status:0,message:'更新馆藏失败',affevtedRows:0});
+        //影响行数不等于1
+        if(results.affectedRows !== 1) return res.json({status:0,message:'更新馆藏不存在',affectedRows:0});
+        res.json({status:200,message:'更新馆藏成功',affectedRows:results.affectedRows})
     })
 });
