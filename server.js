@@ -580,3 +580,53 @@ app.post('/api/updatebooknum',(req,res) => {
         res.json({status:200,message:'更新馆藏成功',affectedRows:results.affectedRows})
     })
 });
+///获取所有新闻
+app.get('/api/getallnews',(req,res) => {
+    // 定义SQL语句
+    const sqlStr = 'select * from newslist';
+    conn.query(sqlStr,(err,results) => {
+        // console.log(results);
+        // console.log(results[0]);//每一行查询结果保存到数字中，这个数组元素是一个对象，对象包括sql获得的属性
+        if(err) return res.json({status:0,message:'获取失败',affectedRows:0});
+        res.json({
+            //在这里返回json对象给服务器，status是状态码，mssage是sql获得的内容属性，
+            //results是sql获取的数据
+            status:200,message:results,affectedRows:0
+        })
+    })
+});
+///获取所有新闻
+app.get('/api/getidnews',(req,res) => {
+    // 定义SQL语句
+    const sqlStr = 'select * from newslist where id = ?';
+    const id=req.query.id
+    conn.query(sqlStr,id,(err,results) => {
+        // console.log(results);
+        // console.log(results[0]);//每一行查询结果保存到数字中，这个数组元素是一个对象，对象包括sql获得的属性
+        if(err) return res.json({status:0,message:'获取失败',affectedRows:0});
+        res.json({
+            //在这里返回json对象给服务器，status是状态码，mssage是sql获得的内容属性，
+            //results是sql获取的数据
+            status:200,message:results,affectedRows:0
+        })
+    })
+});
+
+
+//添加新图书数据，http://127.0.0.1:5000/api/addnewbook
+//调用传一个body对象数据，用x-www-form格式
+app.post('/api/addnewbook',(req,res) => {
+
+    const data = req.body;
+    console.log(data);
+    const sqlStr = 'insert into librarybook set ?';
+    conn.query(sqlStr,[data],(err,results) => {
+        if(err) return res.json({status:0,message:'添加失败',affectedRows:0});
+        if(results.affectedRows !== 1) return res.json({status:200,message:'添加失败',affectedRows:0});
+        res.json({
+            status:200,
+            message:'添加成功',
+            affectedRows:results.affectedRows
+        })
+    })
+});
