@@ -9,8 +9,9 @@ const conn = mysql.createConnection({
     host:'localhost',
     user:'root',
     password:'1111',
-    database:'library'
+    database:'library1'
 });
+//原始数据库为library，内测数据库为library1
 // 注册 解析表单的body-parser
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({extended:false}));
@@ -627,6 +628,38 @@ app.post('/api/addnewbook',(req,res) => {
             status:200,
             message:'添加成功',
             affectedRows:results.affectedRows
+        })
+    })
+});
+/****************************内测功能区**************************************************************/
+///获取所有座位
+app.get('/api/getallseat',(req,res) => {
+    // 定义SQL语句
+    const sqlStr = 'select * from allseat';
+    conn.query(sqlStr,(err,results) => {
+        // console.log(results);
+        // console.log(results[0]);//每一行查询结果保存到数字中，这个数组元素是一个对象，对象包括sql获得的属性
+        if(err) return res.json({status:0,message:'获取失败',affectedRows:0});
+        res.json({
+            //在这里返回json对象给服务器，status是状态码，mssage是sql获得的内容属性，
+            //results是sql获取的数据
+            status:200,message:results,affectedRows:0
+        })
+    })
+});
+//获取座位信息
+app.get('/api/getseatinfo',(req,res) => {
+    // 定义SQL语句
+    const id=req.query.id;
+    const sqlStr = 'select * from allseat where id=?';
+    conn.query(sqlStr,id,(err,results) => {
+        // console.log(results);
+        // console.log(results[0]);//每一行查询结果保存到数字中，这个数组元素是一个对象，对象包括sql获得的属性
+        if(err) return res.json({status:0,message:'获取失败',affectedRows:0});
+        res.json({
+            //在这里返回json对象给服务器，status是状态码，mssage是sql获得的内容属性，
+            //results是sql获取的数据
+            status:200,message:results[0],affectedRows:0
         })
     })
 });
