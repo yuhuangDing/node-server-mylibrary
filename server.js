@@ -659,7 +659,44 @@ app.get('/api/getseatinfo',(req,res) => {
         res.json({
             //在这里返回json对象给服务器，status是状态码，mssage是sql获得的内容属性，
             //results是sql获取的数据
+
             status:200,message:results[0],affectedRows:0
         })
+    })
+});
+///获取用户所有座位预约
+app.get('/api/getuserseat',(req,res) => {
+    const username = req.query.username;
+    //console.log(username);
+    const sqlStr = 'select * from userseat where username = ?';
+    conn.query(sqlStr, username, (err, results) => {
+        if (err) return res.json({status: 0, message: '获取数据失败', affectedRows: 0});
+        //if (results.length !== 1) return res.json({status: 0, message: '数据不存在', affectedRows: 0});
+        res.json({
+            status: 200,
+            message: results,
+            affectedRows: 0
+        })
+    })
+});
+/*座位预约状态修改*/
+app.post('/api/seatupdate',(req,res) => {
+    const data = req.body;
+    console.log(req.body)
+    const username=data.username;
+    const seatw=data.seatw;
+    const seatc=data.seatc;
+    const opt=data.opt;
+    if(opt==='Y'){
+        var sqlStr = "update userseat set isok='Y' where username =?  AND seatc=? AND seatw=?";
+    }
+    else if(opt==='N'){
+        var sqlStr = "update userseat set isok='N' where username =?  AND seatc=? AND seatw=?";
+    }
+    conn.query(sqlStr,[username,seatc,seatw],(err,results) => {
+        if(err) return res.json({status:0,message:'操作失败',affevtedRows:0});
+        //影响行数不等于1
+        if(results.affectedRows !== 1) return res.json({status:0,message:'操作不存在',affectedRows:0});
+        res.json({status:200,message:'操作成功',affectedRows:results.affectedRows})
     })
 });
