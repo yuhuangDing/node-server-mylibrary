@@ -360,6 +360,22 @@ app.post('/api/delorder',(req,res) => {
     })
 });
 
+//预约后修改馆藏
+//http://127.0.0.1:5000/api/updatebooknum
+app.get('/api/updatebooknum',(req,res) => {
+
+    const isbn=req.query.isbn;
+    const sqlStr = "update librarybook set booknum=booknum-1 where isbn = ?";
+    conn.query(sqlStr,isbn,(err,results) => {
+        if(err) return res.json({status:0,message:'取消失败',affevtedRows:0});
+        //影响行数不等于1
+        if(results.affectedRows !== 1) return res.json({status:0,message:'取消项目不存在',affectedRows:0});
+        res.json({status:200,message:'取消预约成功',affectedRows:results.affectedRows})
+    })
+});
+
+
+
 //删除评论
 //http://127.0.0.1:5000/api/delcomment用传一个body对象数据修改指定id，用x-www-form格式
 app.post('/api/delcomment',(req,res) => {
@@ -698,5 +714,33 @@ app.post('/api/seatupdate',(req,res) => {
         //影响行数不等于1
         if(results.affectedRows !== 1) return res.json({status:0,message:'操作不存在',affectedRows:0});
         res.json({status:200,message:'操作成功',affectedRows:results.affectedRows})
+    })
+});
+//**api/getimgcategory  获取图书分类
+app.get('/api/getimgcategory',(req,res) => {
+    const sqlStr = 'select bookclass,bookclassname from bookclass';
+    conn.query(sqlStr, (err, results) => {
+        if (err) return res.json({status: 0, message: '获取数据失败', affectedRows: 0});
+        //if (results.length !== 1) return res.json({status: 0, message: '数据不存在', affectedRows: 0});
+        res.json({
+            status: 200,
+            message: results,
+            affectedRows: 0
+        })
+    })
+});
+//**  获取图书分类对应的图书
+
+app.get('/api/getbooks',(req,res) => {
+    const bookclass=req.query.bookclass;
+    const sqlStr = 'select * from librarybook where bookclass=?';
+    conn.query(sqlStr, bookclass,(err, results) => {
+        if (err) return res.json({status: 0, message: '获取数据失败', affectedRows: 0});
+        //if (results.length !== 1) return res.json({status: 0, message: '数据不存在', affectedRows: 0});
+        res.json({
+            status: 200,
+            message: results,
+            affectedRows: 0
+        })
     })
 });
