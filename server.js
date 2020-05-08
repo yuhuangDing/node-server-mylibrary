@@ -730,10 +730,38 @@ app.get('/api/getimgcategory',(req,res) => {
     })
 });
 //**  获取图书分类对应的图书
-
 app.get('/api/getbooks',(req,res) => {
     const bookclass=req.query.bookclass;
     const sqlStr = 'select * from librarybook where bookclass=?';
+    conn.query(sqlStr, bookclass,(err, results) => {
+        if (err) return res.json({status: 0, message: '获取数据失败', affectedRows: 0});
+        //if (results.length !== 1) return res.json({status: 0, message: '数据不存在', affectedRows: 0});
+        res.json({
+            status: 200,
+            message: results,
+            affectedRows: 0
+        })
+    })
+});
+
+/*获取推荐图书分类*/
+app.get('/api/getsuggestbook',(req,res) => {
+    const username=req.query.username;
+    const sqlStr ='SELECT * from (select username,bookclass,count(bookclass) as tj FROM orderbook GROUP BY bookclass,username) temp WHERE temp.username=? ORDER BY tj';
+    conn.query(sqlStr, username,(err, results) => {
+        if (err) return res.json({status: 0, message: '获取数据失败', affectedRows: 0});
+        //if (results.length !== 1) return res.json({status: 0, message: '数据不存在', affectedRows: 0});
+        res.json({
+            status: 200,
+            message: results[0],
+            affectedRows: 0
+        })
+    })
+});
+/*根据推荐分类获得图书*/
+app.get('/api/getsuggestbooks',(req,res) => {
+    const bookclass=req.query.bookclass;
+    const sqlStr ='SELECT * from librarybook WHERE bookclass=?';
     conn.query(sqlStr, bookclass,(err, results) => {
         if (err) return res.json({status: 0, message: '获取数据失败', affectedRows: 0});
         //if (results.length !== 1) return res.json({status: 0, message: '数据不存在', affectedRows: 0});
