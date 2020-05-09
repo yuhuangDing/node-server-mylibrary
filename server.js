@@ -367,10 +367,10 @@ app.get('/api/updatebooknum',(req,res) => {
     const isbn=req.query.isbn;
     const sqlStr = "update librarybook set booknum=booknum-1 where isbn = ?";
     conn.query(sqlStr,isbn,(err,results) => {
-        if(err) return res.json({status:0,message:'取消失败',affevtedRows:0});
+        if(err) return res.json({status:0,message:'修改失败',affevtedRows:0});
         //影响行数不等于1
-        if(results.affectedRows !== 1) return res.json({status:0,message:'取消项目不存在',affectedRows:0});
-        res.json({status:200,message:'取消预约成功',affectedRows:results.affectedRows})
+        if(results.affectedRows !== 1) return res.json({status:0,message:'修改项目不存在',affectedRows:0});
+        res.json({status:200,message:'修改馆藏成功',affectedRows:results.affectedRows})
     })
 });
 
@@ -647,7 +647,7 @@ app.post('/api/addnewbook',(req,res) => {
         })
     })
 });
-/****************************内测功能区**************************************************************/
+/****************************内测功能区     座位预定**************************************************************/
 ///获取所有座位
 app.get('/api/getallseat',(req,res) => {
     // 定义SQL语句
@@ -699,23 +699,86 @@ app.get('/api/getuserseat',(req,res) => {
 app.post('/api/seatupdate',(req,res) => {
     const data = req.body;
     console.log(req.body)
+    const id=data.id;
     const username=data.username;
     const seatw=data.seatw;
     const seatc=data.seatc;
     const opt=data.opt;
-    if(opt==='Y'){
-        var sqlStr = "update userseat set isok='Y' where username =?  AND seatc=? AND seatw=?";
+    if(opt==='Y'){//确认入座
+        var sqlStr = "update userseat set isok='Y' where username =?  AND seatc=? AND seatw=? AND id=?";
     }
-    else if(opt==='N'){
-        var sqlStr = "update userseat set isok='N' where username =?  AND seatc=? AND seatw=?";
+    else if(opt==='N'){//取消入座
+        var sqlStr = "update userseat set isok='N' where username =?  AND seatc=? AND seatw=? AND id=?";
     }
-    conn.query(sqlStr,[username,seatc,seatw],(err,results) => {
+    conn.query(sqlStr,[username,seatc,seatw,id],(err,results) => {
         if(err) return res.json({status:0,message:'操作失败',affevtedRows:0});
         //影响行数不等于1
         if(results.affectedRows !== 1) return res.json({status:0,message:'操作不存在',affectedRows:0});
         res.json({status:200,message:'操作成功',affectedRows:results.affectedRows})
     })
 });
+/*离座*/
+app.get('/api/leaveseat',(req,res) => {
+    const id = req.query.id;
+    var sqlStr = "update userseat set isok='S' where id=?";
+    conn.query(sqlStr,id,(err,results) => {
+        if(err) return res.json({status:0,message:'操作失败',affevtedRows:0});
+        //影响行数不等于1
+        if(results.affectedRows !== 1) return res.json({status:0,message:'操作不存在',affectedRows:0});
+        res.json({status:200,message:'操作成功',affectedRows:results.affectedRows})
+    })
+});
+/*离座接口2 更新所有座位表   api/leaveseatandupdate*/
+app.post('/api/leaveseatandupdate',(req,res) => {
+    const data = req.body;
+    const seatw=data.seatw;
+    const seatc=data.seatc;
+    var sqlStr = "update allseat set IsOkToOrder='Y',ishavepeople='N' where seatc=? AND seatw=?";
+    conn.query(sqlStr,[seatc,seatw],(err,results) => {
+        if(err) return res.json({status:0,message:'操作失败',affevtedRows:0});
+        //影响行数不等于1
+        if(results.affectedRows !== 1) return res.json({status:0,message:'操作不存在',affectedRows:0});
+        res.json({status:200,message:'操作成功',affectedRows:results.affectedRows})
+    })
+});
+
+
+/*加入预约座位到座位表*/
+app.post('/api/orderseat',(req,res) => {
+    const data = req.body;
+    //console.log(req.body)
+    const id=data.id;
+    const IsOkToOrder=data.IsOkToOrder;
+    const ishavepeople=data.ishavepeople;
+    const begintime=data.begintime;
+    const  endtime=data.endtime;
+    const sqlStr='update allseat set IsOkToOrder=? , ishavepeople=? , begintime=? ,endtime=? WHERE id=?';
+    conn.query(sqlStr,[IsOkToOrder,ishavepeople,begintime,endtime,id],(err,results) => {
+        if(err) return res.json({status:0,message:'操作失败',affevtedRows:0});
+        res.json({status:200,message:'操作成功',affectedRows:results.affectedRows})
+    })
+});
+/*加入预约座位到用户座位表*/
+app.post('/api/adduserseat',(req,res) => {
+    const data = req.body;
+    console.log(data);
+    const sqlStr = 'insert into userseat set ?';
+    conn.query(sqlStr,[data],(err,results) => {
+        if(err) return res.json({status:0,message:'添加失败',affectedRows:0});
+        if(results.affectedRows !== 1) return res.json({status:200,message:'添加失败',affectedRows:0});
+        res.json({
+            status:200,
+            message:'添加成功',
+            affectedRows:results.affectedRows
+        })
+    })
+});
+
+
+
+
+
+/********************************************************************图书推荐与分类*/
 //**api/getimgcategory  获取图书分类
 app.get('/api/getimgcategory',(req,res) => {
     const sqlStr = 'select bookclass,bookclassname from bookclass';
