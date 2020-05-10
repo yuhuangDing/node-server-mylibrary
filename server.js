@@ -852,3 +852,16 @@ app.get('/api/analyseorderbooknum',(req,res) => {
         })
     })
 });
+/*按图书类别获取预约热度统计*/
+app.get('/api/analyseorderbookclass',(req,res) => {
+    const sqlStr ='SELECT bookclass.bookclass,bookclass.bookclassname,count FROM (SELECT bookclass,count(bookclass) count from orderbook GROUP BY bookclass) a,bookclass where bookclass.bookclass=a.bookclass';
+    conn.query(sqlStr,(err, results) => {
+        if (err) return res.json({status: 0, message: '获取数据失败', affectedRows: 0});
+        //if (results.length !== 1) return res.json({status: 0, message: '数据不存在', affectedRows: 0});
+        res.json({
+            status: 200,
+            message: results.sort(),
+            affectedRows: 0
+        })
+    })
+});
