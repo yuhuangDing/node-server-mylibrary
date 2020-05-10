@@ -151,7 +151,7 @@ app.get('/api/login',(req,res) => {
 //个人信息获取
 app.get('/api/userinfo',(req,res) => {
     const username = req.query.username;
-    const sqlStr = 'select username,email,phone,userps from member where username = ? ';
+    const sqlStr = 'select username,name,email,phone,userps from member where username = ? ';
     conn.query(sqlStr, username, (err, results) => {
         if (err) return res.json({status: 100, message: '获取数据失败',ups:0, affectedRows: 0});
         if (results.length !== 1) return res.json({status: 200, message: '数据不存在或存在错误', ups:0,affectedRows: 0});
@@ -831,6 +831,23 @@ app.get('/api/getsuggestbooks',(req,res) => {
         res.json({
             status: 200,
             message: results,
+            affectedRows: 0
+        })
+    })
+});
+
+
+
+/********************图标数据分析接口******************************/
+/*按月日获取预约数量统计*/
+app.get('/api/analyseorderbooknum',(req,res) => {
+    const sqlStr ='select DATE_FORMAT(ordertime,"%c-%e") date, count(orderbooknum) count from orderbook group by date';
+    conn.query(sqlStr,(err, results) => {
+        if (err) return res.json({status: 0, message: '获取数据失败', affectedRows: 0});
+        //if (results.length !== 1) return res.json({status: 0, message: '数据不存在', affectedRows: 0});
+        res.json({
+            status: 200,
+            message: results.sort(),
             affectedRows: 0
         })
     })
